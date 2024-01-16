@@ -1,0 +1,28 @@
+import pandas as pd
+from google.colab import files
+
+uploaded = files.upload()
+
+file_path = "Test data.xlsx"
+data = pd.read_excel(file_path)
+
+choice_columns = [col for col in data.columns if col.startswith("Which of the following topic(s) would you be most interested in reading about?")] #Unique kodu var pandasta. Buna bak.
+
+def get_choices(row):
+    choices = {}
+    for col in choice_columns:
+        if pd.notna(row[col]): #Bir öğrencinin column içinde tercih yapıp yapmadığını kontrol eder. Eğer öğrenci tercih yaptıysa True, yapmadıysa False çıktısı verir.
+
+            topic = col.split('[')[-1].split(']')[0] #data tablosundaki bir öğrencinin her bir sütununu tarar ve konu başlıklarını çıkarır.
+            choices[row[col]] = topic
+
+    return [choices[key] for key in sorted(choices)]
+
+data['Choices'] = data.apply(get_choices, axis=1) #Her bir satıra yukardaki işlemi uygular.
+
+print(data[['Name', 'Choices']])
+
+output_filename = 'choices.xlsx'
+data.to_excel(output_filename, index=False)
+
+files.download(output_filename)
